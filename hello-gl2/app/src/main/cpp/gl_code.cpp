@@ -26,6 +26,9 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include <string>
+#include <gli/gli.hpp>
+
 #define  LOG_TAG    "libgl2jni"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
@@ -43,15 +46,20 @@ static void checkGlError(const char* op) {
 }
 
 auto gVertexShader =
-    "attribute vec4 vPosition;\n"
+    "attribute vec3 vPosition;\n"
+    "attribute vec2 vTexCoord;\n"
+    "varying vec2 texcoord;\n"
     "void main() {\n"
-    "  gl_Position = vPosition;\n"
+    "  gl_Position = vec4(vPosition, 1.0);\n"
+    "  texcoord = vTexCoord;\n"
     "}\n";
 
 auto gFragmentShader =
     "precision mediump float;\n"
+    "uniform sampler2D Tex;\n"
+    "varying vec2 texcoord;\n"
     "void main() {\n"
-    "  gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);\n"
+    "  gl_FragColor = texture2D(Tex, texcoord);\n"
     "}\n";
 
 GLuint loadShader(GLenum shaderType, const char* pSource) {
@@ -120,6 +128,9 @@ GLuint createProgram(const char* pVertexSource, const char* pFragmentSource) {
 
 GLuint gProgram;
 GLuint gvPositionHandle;
+GLuint gvTexCoordHandle;
+std::string gTextureFilename;
+GLuint gTexHandle;
 
 bool setupGraphics(int w, int h) {
     printGLString("Version", GL_VERSION);
@@ -138,6 +149,35 @@ bool setupGraphics(int w, int h) {
     LOGI("glGetAttribLocation(\"vPosition\") = %d\n",
             gvPositionHandle);
 
+    gvTexCoordHandle = glGetAttribLocation(gProgram, "vTexCoord");
+    checkGlError("glGetAttribLocation");
+
+    GLuint textureHandle;
+    glGenTextures(1, &textureHandle);
+    checkGlError("glGenTextures");
+    glActiveTexture(GL_TEXTURE0);
+    checkGlError("glActiveTexture");
+    glBindTexture(GL_TEXTURE_2D, textureHandle);
+    checkGlError("glBindTexture");
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    checkGlError("glTexParameteri");
+
+    uint8_t pixels[] = {
+            0, 0, 0, 255, 255, 255, 255, 255,
+            255, 255, 255, 255, 0, 0, 0, 255
+    };
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    checkGlError("glTexImage2D");
+
+    auto texture = gli::load(gTextureFilename);
+    gli::gl gli_gl(gli::gl::PROFILE_ES20);
+    auto texture_format = gli_gl.translate(texture.format(), texture.swizzles());
+    glCompressedTexImage2D(GL_TEXTURE_2D, 0, texture_format.Internal, texture.extent().x, texture.extent().y, 0, texture.size(0), texture.data());
+
+    gTexHandle = glGetUniformLocation(gProgram, "Tex");
+    checkGlError("glGetUniformLocation");
+
     glViewport(0, 0, w, h);
     checkGlError("glViewport");
     return true;
@@ -145,6 +185,24 @@ bool setupGraphics(int w, int h) {
 
 const GLfloat gTriangleVertices[] = { 0.0f, 0.5f, -0.5f, -0.5f,
         0.5f, -0.5f };
+
+const GLfloat gRectVertices[] = {
+        -1.0f, -1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+        -1.0f, -1.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+        -1.0f, 0.0f, 0.0f
+};
+
+const GLfloat gRectTexCoords[] = {
+        0.0f, 0.0f,
+        1.0f, 0.0f,
+        1.0f, 1.0f,
+        0.0f, 0.0f,
+        1.0f, 1.0f,
+        0.0f, 1.0f
+};
 
 void renderFrame() {
     static float grey;
@@ -160,17 +218,24 @@ void renderFrame() {
     glUseProgram(gProgram);
     checkGlError("glUseProgram");
 
-    glVertexAttribPointer(gvPositionHandle, 2, GL_FLOAT, GL_FALSE, 0, gTriangleVertices);
+    glVertexAttribPointer(gvPositionHandle, 3, GL_FLOAT, GL_FALSE, 0, gRectVertices);
     checkGlError("glVertexAttribPointer");
     glEnableVertexAttribArray(gvPositionHandle);
     checkGlError("glEnableVertexAttribArray");
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glVertexAttribPointer(gvTexCoordHandle, 2, GL_FLOAT, GL_FALSE, 0, gRectTexCoords);
+    checkGlError("glVertexAttribPointer");
+    glEnableVertexAttribArray(gvTexCoordHandle);
+    checkGlError("glEnableVertexAttribArray");
+    glUniform1i(gTexHandle, 0);
+    checkGlError("glUniform1i");
+    glDrawArrays(GL_TRIANGLES, 0, 6);
     checkGlError("glDrawArrays");
 }
 
 extern "C" {
     JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_init(JNIEnv * env, jobject obj,  jint width, jint height);
     JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_step(JNIEnv * env, jobject obj);
+    JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_setTexturePath(JNIEnv * env, jobject obj, jstring str);
 };
 
 JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_init(JNIEnv * env, jobject obj,  jint width, jint height)
@@ -181,4 +246,11 @@ JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_init(JNIEnv * env, jobj
 JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_step(JNIEnv * env, jobject obj)
 {
     renderFrame();
+}
+
+JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_setTexturePath(JNIEnv * env, jobject obj, jstring str) {
+    const jsize len = env->GetStringUTFLength(str);
+    const char *strChars = env->GetStringUTFChars(str, (jboolean *)0);
+    gTextureFilename = std::string(strChars, len);
+    env->ReleaseStringUTFChars(str, strChars);
 }

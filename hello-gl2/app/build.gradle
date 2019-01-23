@@ -15,10 +15,18 @@ android {
     }
 
     buildTypes {
+        debug {
+            ndk {
+                abiFilters "armeabi-v7a"
+            }
+        }
         release {
             minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android.txt'),
                           'proguard-rules.pro'
+            ndk {
+                abiFilters "armeabi-v7a"
+            }
         }
     }
     externalNativeBuild {

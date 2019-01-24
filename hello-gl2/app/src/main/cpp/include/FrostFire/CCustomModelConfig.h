@@ -17,7 +17,7 @@ namespace video
 	class CCustomModelConfig
 	{
 	public:
-		
+
         CCustomModelConfig(const char* archivePath,io::IReadFile* file,video::IVideoDriver* driver);
         ~CCustomModelConfig();
 		core::stringw Version;
@@ -41,7 +41,7 @@ namespace video
         video::IVideoDriver* Driver;
 		void ParseVector3df(core::vector3df& vector, Json::Value& value);
     };
-    
+
 } // end namespace video
 } // end namespace irr
 

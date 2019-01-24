@@ -347,6 +347,19 @@ namespace irr
                 return i < MATERIAL_MAX_TEXTURES ? TextureLayer[i].Texture : 0;
             }
 
+            ITexture* getTexture(core::stringc name){
+                ITexture* tex;
+                    for (int j = 0; j < UniformValue.size(); ++j) {
+                        if (name == UniformValue[j].Name
+                            && UniformValue[j].Values.size()> 0
+                            && UniformValue[j].Values[0]>=0){
+                            int index = UniformValue[j].Values[0];
+                            tex = TextureLayer[index].Texture;
+                            break;
+                        }
+                    }
+                return tex;
+            }
             //! Sets the i-th texture
             /** If i>=MATERIAL_MAX_TEXTURES this setting will be ignored.
             \param i The desired level.

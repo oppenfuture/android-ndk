@@ -221,6 +221,7 @@ public:
 	void updateSource(E_TEXTURE_SOURCE source) { Source = source; }
 
 	virtual void loadRawTexture(GLenum target,u32 width,u32 height,GLsizei dataSize, GLenum internalformat,void * data,u32 layer = 0) {};
+	virtual void loadRawSubTexture(GLenum target,u32 xoffset,u32 yoffset,u32 width,u32 height,GLsizei dataSize, GLenum internalformat,void * data,u32 layer=0) {};
 	//! Returns if the texture has an alpha channel
 	bool hasAlpha() const
 	{

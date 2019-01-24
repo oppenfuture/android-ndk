@@ -155,6 +155,9 @@ auto customRender = R"({
 
 irr::video::IVideoDriver *driver;
 irr::scene::ISceneManager *scene_mgr;
+gli::texture texture;
+gli::gl::format texture_format;
+irr::video::ITexture *irr_texture;
 
 bool setupGraphics(int w, int h) {
     printGLString("Version", GL_VERSION);
@@ -185,10 +188,14 @@ bool setupGraphics(int w, int h) {
     uint32_t indices[] = {0,2,3,3,1,0,2,4,3};
     auto node = scene_mgr->addCustomMeshSceneNode(&material, vertices, 5, indices, 9);
 
-    auto texture = gli::load(gTextureFilename);
+    texture = gli::load(gTextureFilename);
     gli::gl gli_gl(gli::gl::PROFILE_ES20);
-    auto texture_format = gli_gl.translate(texture.format(), texture.swizzles());
-    auto irr_texture = driver->createTexture(GL_TEXTURE_2D, (irr::u32)texture.extent(0).x, (irr::u32)texture.extent(0).y, texture.size(0), texture_format.Internal, texture.data(), 0);
+    texture_format = gli_gl.translate(texture.format(), texture.swizzles());
+    auto data_size = texture.size(0);
+    auto pixels = new uint8_t[data_size];
+    memset(pixels, 0, data_size);
+    irr_texture = driver->createTexture(GL_TEXTURE_2D, (irr::u32)texture.extent(0).x, (irr::u32)texture.extent(0).y, data_size, texture_format.Internal, pixels, 0);
+    delete[] pixels;
     node->getMaterial(0).getPass(0).setTexture("albedo", irr_texture);
 
     scene_mgr->addCameraSceneNode(nullptr, irr::core::vector3df(0, 1, 2.5), irr::core::vector3df(0, 0, 0));
@@ -201,6 +208,8 @@ void renderFrame() {
     if (grey > 1.0f) {
         grey = 0.0f;
     }
+
+    irr_texture->loadRawSubTexture(GL_TEXTURE_2D, 0, 0, (irr::u32)texture.extent(0).x, (irr::u32)texture.extent(0).y, texture.size(0), texture_format.Internal, texture.data(), 0);
 
     irr::u32 int_grey = (irr::u32)(grey * 255);
     driver->beginScene(irr::video::ECBF_COLOR | irr::video:: ECBF_DEPTH, irr::video::SColor(255, int_grey, int_grey, int_grey));

@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <vector>
 
 #include <string>
 #include <gli/gli.hpp>
@@ -49,54 +50,33 @@ static void checkGlError(const char* op) {
 
 std::string gTextureFilename;
 
-auto vs = R"(precision highp float;
+auto vs1 = R"(precision highp float;
 attribute vec3 inVertexPosition;
-attribute vec3 inVertexNormal;
-attribute vec2 inTexCoord0;
 uniform mat4 _MVP;
-uniform vec4 albedo_uv;
-varying vec2 v_UV0;
-varying vec3 v_vPos;
 void main(){
   gl_Position = _MVP * vec4(inVertexPosition, 1.0);
-  v_UV0 =inTexCoord0;
 }
 )";
 
-auto fs = R"(precision highp float;
-uniform float _Time;
-uniform int albedousage;
+auto fs1 = R"(precision highp float;
 uniform sampler2D albedo;
-varying vec2 v_UV0;
+uniform vec2 viewport_size;
 void main()
 {
   vec4 color = vec4(0.7,0.8,0.9,1.0);
-  if (bool(albedousage)) {
-    color = texture2D(albedo, gl_FragCoord.xy / vec2(1000.0, 1000.0));
-  }
+  color = texture2D(albedo, gl_FragCoord.xy / viewport_size);
   gl_FragColor = color;
 }
 )";
 
-auto customRender = R"({
+auto config1 = R"({
   "materialrenderers": [
     {
-      "name": "customShader",
+      "name": "pass1",
       "pass": [
         {
-          "queue": 2000,
-          "blendenalble": true,
-          "blendsrc": "one",
-          "blenddst": "one",
           "zwrite": true,
           "ztest": "always",
-          "cull": "back",
-          "colormask": {
-            "r": true,
-            "g": true,
-            "b": true,
-            "a": true
-          },
           "programid": 0
         }
       ]
@@ -108,56 +88,89 @@ auto customRender = R"({
       "fshsrc": "{{fs}}",
       "uniforms": [
         {
-          "name": "albedo_uv",
-          "type": "vec4",
-          "defaultvalue": {
-            "r": 1,
-            "g": 1,
-            "b": 0,
-            "a": 0
-          }
-        },
-        {
           "name": "albedo",
           "type": "sampler2D"
         },
         {
-          "name": "albedousage",
-          "semantic": "albedo"
-        },
-        {
-          "name": "_Time",
-          "semantic": "_Time",
-          "type": "float"
-        },
-        {
           "name": "_MVP",
           "semantic": "_MVP"
+        },
+        {
+            "name": "viewport_size",
+            "type": "vec2"
         }
       ],
       "attributes": [
         {
           "name": "inVertexPosition",
           "semantic": "inVertexPosition"
-        },
-        {
-          "name": "inVertexNormal",
-          "semantic": "inVertexNormal"
-        },
-        {
-          "name": "inTexCoord0",
-          "semantic": "inTexCoord0"
         }
       ]
     }
   ]
 })";
 
+auto vs2 = R"(precision highp float;
+attribute vec3 inVertexPosition;
+varying vec2 TexCoord;
+void main() {
+    TexCoord = inVertexPosition.xy;
+    gl_Position = vec4(inVertexPosition, 1.0);
+})";
+
+auto fs2 = R"(precision highp float;
+uniform sampler2D src;
+varying vec2 TexCoord;
+void main() {
+    gl_FragColor = texture2D(src, TexCoord);
+})";
+
+auto config2 = R"({
+  "materialrenderers": [
+    {
+      "name": "pass2",
+      "pass": [
+        {
+          "zwrite": true,
+          "ztest": "always",
+          "programid": 0
+        }
+      ]
+    }
+  ],
+  "programs": [
+    {
+      "vshsrc": "{{vs}}",
+      "fshsrc": "{{fs}}",
+      "uniforms": [
+        {
+          "name": "src",
+          "type": "sampler2D"
+        }
+      ],
+      "attributes": [
+        {
+          "name": "inVertexPosition",
+          "semantic": "inVertexPosition"
+        }
+      ]
+    }
+  ]
+})";
+
+std::string genConfig(std::string config, const std::string &vs, const std::string &fs) {
+    config.replace(config.find("{{vs}}"), 6, vs);
+    config.replace(config.find("{{fs}}"), 6, fs);
+    return std::move(config);
+}
+
 irr::video::IVideoDriver *driver;
 irr::scene::ISceneManager *scene_mgr;
 gli::texture texture;
 gli::gl::format texture_format;
 irr::video::ITexture *irr_texture;
+irr::video::ITexture *rt;
+irr::scene::ISceneNode *node1, *node2;
 
 bool setupGraphics(int w, int h) {
     printGLString("Version", GL_VERSION);
@@ -167,26 +180,40 @@ bool setupGraphics(int w, int h) {
 
     LOGI("setupGraphics(%d, %d)", w, h);
 
-    auto device = irr::createDevice(irr::video::EDT_OGLES2, {w, h}, 16, false, false, false);
+    irr::core::dimension2d<irr::u32> size((irr::u32)w, (irr::u32)h);
+    auto device = irr::createDevice(irr::video::EDT_OGLES2, {(irr::u32)w, (irr::u32)h}, 16, false, false, false);
     if (!device) {
         LOGE("Could not create irr device.");
         return false;
     }
     driver = device->getVideoDriver();
+    rt = nullptr;
+    if (driver->queryFeature(irr::video::EVDF_RENDER_TO_TARGET)) {
+        rt = driver->addRenderTargetTexture({w, h}, "rt", irr::video::ECF_R8G8B8);
+        if (rt) {
+            LOGI("Render target created");
+        } else {
+            LOGE("Failed to create render target");
+        }
+    } else {
+        LOGE("No support for render target");
+    }
+
     scene_mgr = device->getSceneManager();
 
-    std::string render_config = customRender;
-    render_config.replace(render_config.find("{{vs}}"), 6, vs);
-    render_config.replace(render_config.find("{{fs}}"), 6, fs);
+    auto pass1_config = genConfig(config1, vs1, fs1);
+    driver->CreateCustomMaterialRenderers(*pass1_config.c_str());
+    std::vector<float> vertices1 = {-0.5f, 0.5f, 0.6f, 0.5f, 0.5f, 0.6f, -0.5f, -0.5f, 0.6f, 0.5f, -0.5f, 0.6f, 0.f, -1.f ,0.6f};
+    std::vector<uint32_t> indices1 = {0,2,3,3,1,0,2,4,3};
+    node1 = scene_mgr->addCustomMeshSceneNode(&driver->getMaterialRenderer("pass1")->InitMaterial,
+            vertices1.data(), (uint32_t)vertices1.size(), indices1.data(), (uint32_t)indices1.size());
 
-    driver->CreateCustomMaterialRenderers(*render_config.c_str());
-
-    auto material = driver->getMaterialRenderer("customShader")->InitMaterial;
-    material.getPass(0).BlendOperation = irr::video::EBO_ADD;
-
-    float vertices[] = {-0.5f, 0.5f, 0.6f, 0.5f, 0.5f, 0.6f, -0.5f, -0.5f, 0.6f, 0.5f, -0.5f, 0.6f, 0.f, -1.f ,0.6f};
-    uint32_t indices[] = {0,2,3,3,1,0,2,4,3};
-    auto node = scene_mgr->addCustomMeshSceneNode(&material, vertices, 5, indices, 9);
+    auto pass2_config = genConfig(config2, vs2, fs2);
+    driver->CreateCustomMaterialRenderers(*pass2_config.c_str());
+    std::vector<float> vertices2 = {0.f, 0.f, 1.f, 1.f, 0.f, 1.f, 1.f, 1.f, 1.f, 0.f, 1.f, 1.f};
+    std::vector<uint32_t> indices2 = {0, 1, 2, 0, 2, 3};
+    node2 = scene_mgr->addCustomMeshSceneNode(&driver->getMaterialRenderer("pass2")->InitMaterial,
+            vertices2.data(), (uint32_t)vertices2.size(), indices2.data(), (uint32_t)indices2.size());
 
     texture = gli::load(gTextureFilename);
     gli::gl gli_gl(gli::gl::PROFILE_ES20);
@@ -196,7 +223,11 @@ bool setupGraphics(int w, int h) {
     memset(pixels, 0, data_size);
     irr_texture = driver->createTexture(GL_TEXTURE_2D, (irr::u32)texture.extent(0).x, (irr::u32)texture.extent(0).y, data_size, texture_format.Internal, pixels, 0);
     delete[] pixels;
-    node->getMaterial(0).getPass(0).setTexture("albedo", irr_texture);
+    node1->getMaterial(0).getPass(0).setTexture("albedo", irr_texture);
+    float viewport_size[2] = {(float)w, (float)h};
+    node1->getMaterial(0).getPass(0).setVector("viewport_size", viewport_size, 2);
+
+    if(rt) node2->getMaterial(0).getPass(0).setTexture("src", rt);
 
     scene_mgr->addCameraSceneNode(nullptr, irr::core::vector3df(0, 1, 2.5), irr::core::vector3df(0, 0, 0));
     return true;
@@ -211,9 +242,31 @@ void renderFrame() {
 
     irr_texture->loadRawSubTexture(GL_TEXTURE_2D, 0, 0, (irr::u32)texture.extent(0).x, (irr::u32)texture.extent(0).y, texture.size(0), texture_format.Internal, texture.data(), 0);
 
+    auto clear_flag = irr::video::ECBF_COLOR | irr::video:: ECBF_DEPTH;
     irr::u32 int_grey = (irr::u32)(grey * 255);
-    driver->beginScene(irr::video::ECBF_COLOR | irr::video:: ECBF_DEPTH, irr::video::SColor(255, int_grey, int_grey, int_grey));
+    auto clear_color1 = irr::video::SColor(255, int_grey, int_grey, int_grey);
+    auto clear_color2 = irr::video::SColor(255, 255 - int_grey, 255 - int_grey, 255 - int_grey);
+    driver->beginScene(clear_flag);
+
+    if (rt) {
+        if (!driver->setRenderTarget(rt, clear_flag, clear_color1)) {
+            LOGE("Set render target to rt failed");
+        }
+        node1->setVisible(true);
+        node2->setVisible(false);
+    }
+
     scene_mgr->drawAll();
+
+    if (rt) {
+        if (!driver->setRenderTarget(nullptr, clear_flag, clear_color2)) {
+            LOGE("Set render target to null failed");
+        }
+        node1->setVisible(false);
+        node2->setVisible(true);
+        scene_mgr->drawAll();
+    }
+
     driver->endScene();
 }
 

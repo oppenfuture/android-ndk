@@ -60,11 +60,11 @@ void main(){
 
 auto fs1 = R"(precision highp float;
 uniform sampler2D albedo;
-uniform vec2 viewport_size;
+uniform vec4 viewport_size[2];
 void main()
 {
   vec4 color = vec4(0.7,0.8,0.9,1.0);
-  color = texture2D(albedo, gl_FragCoord.xy / viewport_size);
+  color = texture2D(albedo, gl_FragCoord.xy / vec2(viewport_size[1].z, viewport_size[1].w));
   gl_FragColor = color;
 }
 )";
@@ -76,7 +76,7 @@ auto config1 = R"({
       "pass": [
         {
           "zwrite": true,
-          "ztest": "always",
+          "ztest": "lessequal",
           "programid": 0
         }
       ]
@@ -85,27 +85,7 @@ auto config1 = R"({
   "programs": [
     {
       "vshsrc": "{{vs}}",
-      "fshsrc": "{{fs}}",
-      "uniforms": [
-        {
-          "name": "albedo",
-          "type": "sampler2D"
-        },
-        {
-          "name": "_MVP",
-          "semantic": "_MVP"
-        },
-        {
-            "name": "viewport_size",
-            "type": "vec2"
-        }
-      ],
-      "attributes": [
-        {
-          "name": "inVertexPosition",
-          "semantic": "inVertexPosition"
-        }
-      ]
+      "fshsrc": "{{fs}}"
     }
   ]
 })";
@@ -132,7 +112,7 @@ auto config2 = R"({
       "pass": [
         {
           "zwrite": true,
-          "ztest": "always",
+          "ztest": "lessequal",
           "programid": 0
         }
       ]
@@ -141,19 +121,7 @@ auto config2 = R"({
   "programs": [
     {
       "vshsrc": "{{vs}}",
-      "fshsrc": "{{fs}}",
-      "uniforms": [
-        {
-          "name": "src",
-          "type": "sampler2D"
-        }
-      ],
-      "attributes": [
-        {
-          "name": "inVertexPosition",
-          "semantic": "inVertexPosition"
-        }
-      ]
+      "fshsrc": "{{fs}}"
     }
   ]
 })";
@@ -224,8 +192,8 @@ bool setupGraphics(int w, int h) {
     irr_texture = driver->createTexture(GL_TEXTURE_2D, (irr::u32)texture.extent(0).x, (irr::u32)texture.extent(0).y, data_size, texture_format.Internal, pixels, 0);
     delete[] pixels;
     node1->getMaterial(0).getPass(0).setTexture("albedo", irr_texture);
-    float viewport_size[2] = {(float)w, (float)h};
-    node1->getMaterial(0).getPass(0).setVector("viewport_size", viewport_size, 2);
+    float viewport_size[8] = {0, 0, 0, 0, 0, 0, (float)w, (float)h};
+    node1->getMaterial(0).getPass(0).setVector("viewport_size", viewport_size, 8);
 
     if(rt) node2->getMaterial(0).getPass(0).setTexture("src", rt);
 

@@ -17,12 +17,16 @@ namespace scene
 enum E_PARTICLE_AFFECTOR_TYPE
 {
 	EPAT_NONE = 0,
-	EPAT_ATTRACT,
-	EPAT_FADE_OUT,
-	EPAT_GRAVITY,
-	EPAT_ROTATE,
-	EPAT_SCALE,
-	EPAT_COUNT
+	EPAT_ATTRACT = 1,
+	EPAT_FADE_OUT = 2,
+	EPAT_GRAVITY = 4,
+	EPAT_ROTATE = 8,
+	EPAT_SCALE = 16,
+	EPAT_FLUIDRESISTANCE = 32,
+	EPAT_PARTICLE_ROTATE = 64,
+	EPAT_RADIAL_SCALE = 128,
+	EPAT_REVOLUTION = 256,
+	EPAT_COUNT = 65536
 };
 
 //! Names for built in particle affectors
@@ -34,7 +38,25 @@ const c8* const ParticleAffectorTypeNames[] =
 	"Gravity",
 	"Rotate",
 	"Scale",
+	"FluidResistance",
+	"ParticleRotate",
+	"RadialScale",
+	"Revolution",
 	0
+};
+
+enum ParticleScaleType
+{
+	PARTICLE_KEEP_SCALE,
+	PARTICLE_ALONG_VECTOR_SCALE,
+	PARTICLE_OPPOSITE_ALONG_VECTOR_SCALE
+};
+
+enum ParticleScaleSpeedType
+{
+	PARTICLE_SCALE_VECTOR_SPEED,
+	PARTICLE_SCALE_DISTANCE_SPEED,
+	PARTICLE_SCALE_CONST_SPEED,
 };
 
 //! A particle affector modifies particles.

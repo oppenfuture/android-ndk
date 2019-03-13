@@ -109,17 +109,17 @@ struct SSkinMeshBuffer : public IMeshBuffer
 	/** \return Index type of this buffer. */
 	virtual video::E_INDEX_TYPE getIndexType() const
 	{
-		return video::EIT_16BIT;
+		return video::EIT_32BIT;
 	}
 
 	//! Get pointer to index array
-	virtual const u16* getIndices() const
+	virtual const u32* getIndices() const
 	{
 		return Indices.const_pointer();
 	}
 
 	//! Get pointer to index array
-	virtual u16* getIndices()
+	virtual u32* getIndices()
 	{
 		return Indices.pointer();
 	}
@@ -425,7 +425,7 @@ struct SSkinMeshBuffer : public IMeshBuffer
 	core::array<video::S3DVertexTangents> Vertices_Tangents;
 	core::array<video::S3DVertex2TCoords> Vertices_2TCoords;
 	core::array<video::S3DVertex> Vertices_Standard;
-	core::array<u16> Indices;
+	core::array<u32> Indices;
 
 	u32 ChangedID_Vertex;
 	u32 ChangedID_Index;

@@ -22,7 +22,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
-#include <FrostFire/irrlicht.h>
+#include <frostfire/irrlicht.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,6 +31,7 @@
 
 #include <string>
 #include <gli/gli.hpp>
+#include "include/frostfire/ISceneNode.h"
 
 #define  LOG_TAG    "libgl2jni"
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
@@ -135,7 +136,7 @@ irr::video::IVideoDriver *driver;
 irr::scene::ISceneManager *scene_mgr;
 gli::texture texture;
 gli::gl::format texture_format;
-irr::video::ITexture *texture1, *texture2;
+irr::scene::ISceneNode *screen_quad_node;
 
 bool setupGraphics(int w, int h) {
     printGLString("Version", GL_VERSION);
@@ -160,7 +161,7 @@ bool setupGraphics(int w, int h) {
     float vertices[] = {-1.f, -1.f, 1.0f, 1.f,  -1.f, 1.0f,
                         1.f,  1.f,  1.0f, -1.f, 1.f,  1.0f};
     uint32_t indices[] = {0, 1, 2, 0, 2, 3};
-    auto screen_quad_node = scene_mgr->addCustomMeshSceneNode(
+    screen_quad_node = scene_mgr->addCustomMeshSceneNode(
             &renderer->InitMaterial, vertices, 4, indices, 6);
 
     texture = gli::load(gTextureFilename);
@@ -169,8 +170,8 @@ bool setupGraphics(int w, int h) {
     auto data_size = texture.size(0);
     auto pixels = new uint8_t[data_size];
     memset(pixels, 0, data_size);
-    texture1 = driver->createTexture(GL_TEXTURE_2D, (irr::u32)texture.extent(0).x, (irr::u32)texture.extent(0).y, data_size, texture_format.Internal, pixels, 0);
-    texture2 = driver->createTexture(GL_TEXTURE_2D, (irr::u32)texture.extent(0).x, (irr::u32)texture.extent(0).y, data_size, texture_format.Internal, pixels, 0);
+    auto texture1 = driver->createTexture(GL_TEXTURE_2D, (irr::u32)texture.extent(0).x, (irr::u32)texture.extent(0).y, data_size, texture_format.Internal, pixels, 0);
+    auto texture2 = driver->createTexture(GL_TEXTURE_2D, (irr::u32)texture.extent(0).x, (irr::u32)texture.extent(0).y, data_size, texture_format.Internal, pixels, 0);
     delete[] pixels;
 
     auto &pass = screen_quad_node->getMaterial(0).getPass(0);
@@ -188,7 +189,9 @@ void renderFrame() {
         grey = 0.0f;
     }
 
-    texture1->loadRawSubTexture(GL_TEXTURE_2D, 0, 0, (irr::u32)texture.extent(0).x, (irr::u32)texture.extent(0).y, texture.size(0), texture_format.Internal, texture.data(), 0);
+    screen_quad_node->getMaterial(0).getPass(0).updateSubTexture("texture1",
+                                                                 0, 0, (irr::u32)texture.extent(0).x, (irr::u32)texture.extent(0).y,
+                                                                 texture.size(0), texture_format.Internal, texture.data());
 
     auto clear_flag = irr::video::ECBF_COLOR | irr::video:: ECBF_DEPTH;
     driver->beginScene(clear_flag);

@@ -22,7 +22,7 @@ enum EFileSystemType
 };
 
 //! Contains the different types of archives
-enum E_FILE_ARCHIVE_TYPE
+/*enum E_FILE_ARCHIVE_TYPE
 {
 	//! A PKZIP archive
 	EFAT_ZIP     = MAKE_IRR_ID('Z','I','P', 0),
@@ -52,7 +52,39 @@ enum E_FILE_ARCHIVE_TYPE
 
 	//! The type of this archive is unknown
 	EFAT_UNKNOWN = MAKE_IRR_ID('u','n','k','n')
-};
+};*/
+		//! Contains the different types of archives
+		enum E_FILE_ARCHIVE_TYPE
+		{
+			//! A PKZIP archive
+					EFAT_ZIP     = 0,
+
+			//! A gzip archive
+					EFAT_GZIP    ,
+
+			//! A virtual directory
+					EFAT_FOLDER  ,
+
+			//! An ID Software PAK archive
+					EFAT_PAK     ,
+
+			//! A Nebula Device archive
+					EFAT_NPK     ,
+
+			//! A Tape ARchive
+					EFAT_TAR     ,
+
+			//! A wad Archive, Quake2, Halflife
+					EFAT_WAD     ,
+
+			//! An Android asset file archive
+					EFAT_ANDROID_ASSET ,
+			//! An iOS asset file archive
+					EFAT_IOS_ASSET ,
+
+			//! The type of this archive is unknown
+					EFAT_UNKNOWN
+		};
 
 //! The FileArchive manages archives and provides access to files inside them.
 class IFileArchive : public virtual IReferenceCounted

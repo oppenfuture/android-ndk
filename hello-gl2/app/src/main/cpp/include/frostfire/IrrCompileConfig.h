@@ -12,7 +12,7 @@
 // This flag will be defined only in SVN, the official release code will have
 // it undefined
 #define IRRLICHT_VERSION_SVN alpha
-#define IRRLICHT_SDK_VERSION "3.0"
+#define IRRLICHT_SDK_VERSION "4.0"
 
 #include <stdio.h> // TODO: Although included elsewhere this is required at least for mingw
 
@@ -73,7 +73,7 @@
 #define NO_IRR_COMPILE_WITH_B3D_WRITER_
 #define NO_IRR_COMPILE_WITH_OBJ_WRITER_
 
-#define NO_IRR_COMPILE_WITH_GUI_
+//#define NO_IRR_COMPILE_WITH_GUI_
 
 #define NO_IRR_COMPILE_WITH_PCX_WRITER_
 
@@ -92,7 +92,7 @@
 #define NO_IRR_COMPILE_WITH_PVR_LOADER_
 #define NO_IRR_COMPILE_WITH_PCX_LOADER_
 #define NO_IRR_COMPILE_WITH_TGA_LOADER_
-#define NO_IRR_COMPILE_WITH_BMP_LOADER_
+//#define NO_IRR_COMPILE_WITH_BMP_LOADER_
 #define NO_IRR_COMPILE_WITH_DDS_LOADER_
 #define NO_IRR_COMPILE_WITH_DDS_DECODER_LOADER_
 
@@ -257,7 +257,7 @@ define out. */
 //! Define _IRR_COMPILE_WITH_OGLES1_ to compile the Irrlicht engine with OpenGL ES 1.1.
 /** If you do not wish the engine to be compiled with OpenGL ES 1.1, comment this
 define out. */
-#define _IRR_COMPILE_WITH_OGLES1_
+//#define _IRR_COMPILE_WITH_OGLES1_
 #ifdef NO_IRR_COMPILE_WITH_OGLES1_
 #undef _IRR_COMPILE_WITH_OGLES1_
 #endif

@@ -16,7 +16,7 @@ namespace scene
 	/** A scene node type is represented by a four character code
 	such as 'cube' or 'mesh' instead of simple numbers, to avoid
 	name clashes with external scene nodes.*/
-	enum ESCENE_NODE_TYPE
+	/*enum ESCENE_NODE_TYPE
 	{
 		//! of type CSceneManager (note that ISceneManager is not(!) an ISceneNode)
 		ESNT_SCENE_MANAGER  = MAKE_IRR_ID('s','m','n','g'),
@@ -33,6 +33,8 @@ namespace scene
 		//! Water Surface Scene Node
 		ESNT_WATER_SURFACE  = MAKE_IRR_ID('w','a','t','r'),
 
+		//! Terrain Scene Node
+		ESNT_TERRAIN        = MAKE_IRR_ID('t','e','r','r'),
 
 		//! Sky Box Scene Node
 		ESNT_SKY_BOX        = MAKE_IRR_ID('s','k','y','_'),
@@ -79,8 +81,12 @@ namespace scene
 		//! Volume Light Scene Node
 		ESNT_VOLUME_LIGHT  = MAKE_IRR_ID('v','o','l','l'),
 
+		//! Maya Camera Scene Node
+		/** Legacy, for loading version <= 1.4.x .irr files
+		ESNT_CAMERA_MAYA    = MAKE_IRR_ID('c','a','m','M'),
+
 		//! First Person Shooter Camera
-		/** Legacy, for loading version <= 1.4.x .irr files */
+		/** Legacy, for loading version <= 1.4.x .irr files
 		ESNT_CAMERA_FPS     = MAKE_IRR_ID('c','a','m','F'),
 
 		//! Unknown scene node
@@ -88,6 +94,86 @@ namespace scene
 
 		//! Will match with any scene node when checking types
 		ESNT_ANY            = MAKE_IRR_ID('a','n','y','_')
+	};*/
+
+	enum ESCENE_NODE_TYPE
+	{
+		//! of type CSceneManager (note that ISceneManager is not(!) an ISceneNode)
+				ESNT_SCENE_MANAGER = 0,
+
+		//! simple cube scene node
+				ESNT_CUBE,
+
+		//! Sphere scene node
+				ESNT_SPHERE         ,
+
+		//! Text Scene Node
+				ESNT_TEXT           ,
+
+		//! Water Surface Scene Node
+				ESNT_WATER_SURFACE  ,
+
+		//! Terrain Scene Node
+				ESNT_TERRAIN       ,
+
+		//! Sky Box Scene Node
+				ESNT_SKY_BOX        ,
+
+		//! Sky Dome Scene Node
+				ESNT_SKY_DOME       ,
+
+		//! Shadow Volume Scene Node
+				ESNT_SHADOW_VOLUME  ,
+
+		//! Octree Scene Node
+				ESNT_OCTREE         ,
+
+		//! Mesh Scene Node
+				ESNT_MESH           ,
+
+		//! Light Scene Node
+				ESNT_LIGHT          ,
+
+		//! Empty Scene Node
+				ESNT_EMPTY          ,
+
+		//! Dummy Transformation Scene Node
+				ESNT_DUMMY_TRANSFORMATION ,
+
+		//! Camera Scene Node
+				ESNT_CAMERA         ,
+
+		//! Billboard Scene Node
+				ESNT_BILLBOARD      ,
+
+		//! Animated Mesh Scene Node
+				ESNT_ANIMATED_MESH  ,
+
+		//! Particle System Scene Node
+				ESNT_PARTICLE_SYSTEM ,
+
+		//! Quake3 Shader Scene Node
+				ESNT_Q3SHADER_SCENE_NODE  ,
+
+		//! Quake3 Model Scene Node ( has tag to link to )
+				ESNT_MD3_SCENE_NODE  ,
+
+		//! Volume Light Scene Node
+				ESNT_VOLUME_LIGHT  ,
+
+		//! Maya Camera Scene Node
+		/** Legacy, for loading version <= 1.4.x .irr files */
+				ESNT_CAMERA_MAYA    ,
+
+		//! First Person Shooter Camera
+		/** Legacy, for loading version <= 1.4.x .irr files */
+				ESNT_CAMERA_FPS     ,
+
+		//! Unknown scene node
+				ESNT_UNKNOWN        ,
+
+		//! Will match with any scene node when checking types
+				ESNT_ANY
 	};
 
 

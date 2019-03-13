@@ -71,13 +71,13 @@ namespace scene
 		}
 
 		//! returns pointer to Indices
-		virtual const u16* getIndices() const
+		virtual const u32* getIndices() const
 		{
 			return Indices.const_pointer();
 		}
 
 		//! returns pointer to Indices
-		virtual u16* getIndices()
+		virtual u32* getIndices()
 		{
 			return Indices.pointer();
 		}
@@ -91,7 +91,7 @@ namespace scene
 		//! Get type of index data which is stored in this meshbuffer.
 		virtual video::E_INDEX_TYPE getIndexType() const
 		{
-			return video::EIT_16BIT;
+			return video::EIT_32BIT;
 		}
 
 		//! returns an axis aligned bounding box
@@ -218,7 +218,7 @@ namespace scene
 		core::array<video::S3DVertex> *Vertices;
 
 		//! Array of Indices
-		core::array<u16> Indices;
+		core::array<u32> Indices;
 
 		//! ID used for hardware buffer management
 		u32 ChangedID_Vertex;

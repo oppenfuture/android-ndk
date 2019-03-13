@@ -132,6 +132,23 @@
 #include "IColladaMeshWriter.h"
 #include "IMetaTriangleSelector.h"
 #include "IOSOperator.h"
+#include "IParticleAffector.h"
+#include "IParticleAnimatedMeshSceneNodeEmitter.h"
+#include "IParticleAttractionAffector.h"
+#include "IParticleBoxEmitter.h"
+#include "IParticleConeEmitter.h"
+#include "IParticleCylinderEmitter.h"
+#include "IParticleEmitter.h"
+#include "IParticleFadeOutAffector.h"
+#include "IParticleFluidResistanceAffector.h"
+#include "IParticleGravityAffector.h"
+#include "IParticleMeshEmitter.h"
+#include "IParticleParticleRotateAffector.h"
+#include "IParticleRadialScaleAffector.h"
+#include "IParticleRevolutionAffector.h"
+#include "IParticleRingEmitter.h"
+#include "IParticleRotationAffector.h"
+#include "IParticleSphereEmitter.h"
 #include "IParticleSystemSceneNode.h" // also includes all emitters and attractors
 #include "IQ3LevelMesh.h"
 #include "IQ3Shader.h"
@@ -351,7 +368,7 @@ namespace irr
 		bool stencilbuffer = true,
 		bool vsync = false,
 		IEventReceiver* receiver = 0,
-		void* assetFileReaderHandle = 0);
+		long long assetFileReaderHandle = 0);
 
 	//! typedef for Function Pointer
 	typedef IrrlichtDevice* (IRRCALLCONV *funcptr_createDevice )(

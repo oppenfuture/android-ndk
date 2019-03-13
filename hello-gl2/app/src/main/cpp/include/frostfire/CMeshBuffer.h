@@ -98,12 +98,12 @@ namespace scene
 		/** \return Index type of this buffer. */
 		virtual video::E_INDEX_TYPE getIndexType() const
 		{
-			return video::EIT_16BIT;
+			return video::EIT_32BIT;
 		}
 
 		//! Get pointer to indices
 		/** \return Pointer to indices. */
-		virtual const u16* getIndices() const
+		virtual const u32* getIndices() const
 		{
 			return Indices.const_pointer();
 		}
@@ -111,7 +111,7 @@ namespace scene
 
 		//! Get pointer to indices
 		/** \return Pointer to indices. */
-		virtual u16* getIndices()
+		virtual u32* getIndices()
 		{
 			return Indices.pointer();
 		}
@@ -488,7 +488,7 @@ namespace scene
         core::array<video::S3DVertex> Vertices_Standard;
         video::E_VERTEX_TYPE VertexType = video::E_VERTEX_TYPE::EVT_STANDARD;
 		//! Indices into the vertices of this buffer.
-		core::array<u16> Indices;
+		core::array<u32> Indices;
 		//! Bounding box of this meshbuffer.
 		core::aabbox3d<f32> BoundingBox;
 	};

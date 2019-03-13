@@ -225,6 +225,12 @@ namespace gui
 
 		//! Checks whether the button scales the used images
 		virtual bool isScalingImage() const = 0;
+
+		//! Sets the color of the button
+		virtual void setColor(video::SColorf color) = 0;
+
+		//! Gets the color of the button
+		virtual video::SColorf getColor() const = 0;
 	};
 
 

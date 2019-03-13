@@ -69,7 +69,7 @@ public:
 
 		T & operator * () { return Current->Element; }
 		T * operator ->() { return &Current->Element; }
-
+		T get_value(){ return Current->Element; }
 	private:
 		explicit Iterator(SKListNode* begin) : Current(begin) {}
 

@@ -17,6 +17,21 @@ namespace scene
 class IParticleBoxEmitter : public IParticleEmitter
 {
 public:
+	IParticleBoxEmitter(const core::vector3df& direction = core::vector3df(0.0f,0.03f,0.0f),
+						u32 minParticlesPerSecond = 20,
+						u32 maxParticlesPerSecond = 40,
+						const video::SColor& minStartColor = video::SColor(255,0,0,0),
+						const video::SColor& maxStartColor = video::SColor(255,255,255,255),
+						u32 lifeTimeMin=2000,
+						u32 lifeTimeMax=4000,
+						s32 maxAngleDegrees=0,
+						const core::dimension2df& minStartSize = core::dimension2df(5.0f,5.0f),
+						const core::dimension2df& maxStartSize = core::dimension2df(5.0f,5.0f)) :
+			IParticleEmitter(direction, minParticlesPerSecond, maxParticlesPerSecond,
+							 minStartColor, maxStartColor,
+							 lifeTimeMin, lifeTimeMax, maxAngleDegrees,
+							 minStartSize, maxStartSize)
+	{}
 
 	//! Set the box shape
 	virtual void setBox( const core::aabbox3df& box ) = 0;

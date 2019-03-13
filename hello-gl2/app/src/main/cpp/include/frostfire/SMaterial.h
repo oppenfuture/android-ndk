@@ -14,12 +14,19 @@
 #include "SMaterialLayer.h"
 #include "json.h"
 
+#include "ITexture.h"
+
+#if defined(_IRR_COMPILE_WITH_IOS_DEVICE_)
+#include <OpenGLES/ES2/gl.h>
+#elif defined(_IRR_COMPILE_WITH_ANDROID_DEVICE_)
+#include <GLES2/gl2.h>
+#else
+#endif
+
 namespace irr
 {
     namespace video
     {
-        class ITexture;
-
         //! Flag for EMT_ONETEXTURE_BLEND, ( BlendFactor ) BlendFunc = source * sourceFactor + dest * destFactor
         enum E_BLEND_FACTOR
         {
@@ -348,7 +355,7 @@ namespace irr
             }
 
             ITexture* getTexture(core::stringc name){
-                ITexture* tex;
+                ITexture* tex = 0;
                     for (int j = 0; j < UniformValue.size(); ++j) {
                         if (name == UniformValue[j].Name
                             && UniformValue[j].Values.size()> 0
@@ -424,6 +431,39 @@ namespace irr
                     }
                 }
             }
+            void updateSubTexture(core::stringc name,u32 xoffset,u32 yoffset,u32 width,u32 height,GLsizei dataSize, GLenum internalformat,void * data ){
+                ITexture* tex = 0;
+                int index = 0;
+                for (int j = 0; j < UniformValue.size(); ++j) {
+                    if (name == UniformValue[j].Name
+                        && UniformValue[j].Values.size()> 0
+                        && UniformValue[j].Values[0]>=0){
+                        index = UniformValue[j].Values[0];
+                        tex = TextureLayer[index].Texture;
+                        break;
+                    }
+                }
+                if(tex)
+                    tex->loadRawSubTexture(GL_TEXTURE_2D,xoffset,yoffset,width,height,dataSize,internalformat,data,index);
+            }
+
+            void updateTexture(core::stringc name,u32 width,u32 height,GLsizei dataSize, GLenum internalformat,void * data ){
+                ITexture* tex = 0;
+                int index = 0;
+                for (int j = 0; j < UniformValue.size(); ++j) {
+                    if (name == UniformValue[j].Name
+                        && UniformValue[j].Values.size()> 0
+                        && UniformValue[j].Values[0]>=0){
+                        index = UniformValue[j].Values[0];
+                        tex = TextureLayer[index].Texture;
+                        break;
+                    }
+                }
+                if(tex)
+                    tex->loadRawTexture(GL_TEXTURE_2D,width,height,dataSize,internalformat,data,index);
+            }
+
+
             SUniformValue* findUniform(core::stringc name){
                 SUniformValue* uniform = 0;
                 for (int j = 0; j < UniformValue.size(); ++j) {
@@ -809,7 +849,7 @@ namespace irr
             }
 
             ITexture* getTexture(core::stringc name){
-                ITexture* tex;
+                ITexture* tex = 0;
                 for (int i = 0; i < MaterialPassList.size(); ++i) {
                     for (int j = 0; j < getPass(i).UniformValue.size(); ++j) {
                         if (name == getPass(i).UniformValue[j].Name
@@ -929,7 +969,7 @@ namespace irr
                     return ECFN_LESS;
                 }else if(key == "lessequal"){
                     return ECFN_LESSEQUAL;
-                }else if(key == "Never"){
+                }else if(key == "never"){
                     return ECFN_NEVER;
                 }else if(key == "notequal"){
                     return ECFN_NOTEQUAL;

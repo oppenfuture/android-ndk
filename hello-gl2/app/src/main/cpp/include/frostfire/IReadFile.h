@@ -42,6 +42,12 @@ namespace io
 		//! Get name of file.
 		/** \return File name as zero terminated character string. */
 		virtual const io::path& getFileName() const = 0;
+
+		//! Get the content of the file
+		virtual const char* getFileContent()  = 0;
+
+		//! You should release the content by the method of getFileContent, after you should not use it
+		virtual void	releaseFileContent(const char* buffer) const = 0;
 	};
 
 	//! Internal function, please do not use.

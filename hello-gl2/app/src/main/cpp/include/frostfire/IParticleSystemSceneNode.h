@@ -6,16 +6,22 @@
 #define __I_PARTICLE_SYSTEM_SCENE_NODE_H_INCLUDED__
 
 #include "ISceneNode.h"
+#include "IParticleAffector.h"
 #include "IParticleAnimatedMeshSceneNodeEmitter.h"
 #include "IParticleBoxEmitter.h"
 #include "IParticleCylinderEmitter.h"
 #include "IParticleMeshEmitter.h"
 #include "IParticleRingEmitter.h"
 #include "IParticleSphereEmitter.h"
+#include "IParticleConeEmitter.h"
 #include "IParticleAttractionAffector.h"
 #include "IParticleFadeOutAffector.h"
 #include "IParticleGravityAffector.h"
 #include "IParticleRotationAffector.h"
+#include "IParticleFluidResistanceAffector.h"
+#include "IParticleParticleRotateAffector.h"
+#include "IParticleRadialScaleAffector.h"
+#include "IParticleRevolutionAffector.h"
 #include "dimension2d.h"
 
 namespace irr
@@ -68,6 +74,231 @@ enum EParticleBehavior
 	EPB_EMITTER_FRAME_INTERPOLATION = 32
 };
 
+// 设置粒子公告板的类型
+enum ParticleBillboardType
+{
+    PARTICLE_BILLBOARD_TYPE,
+    PARTICLE_HORIZONTALBILLBOARD_TYPE,
+    PARTICLE_VERTICALBILLBOARD_TYPE,
+	PARTICLE_NONEBILLBOARD_TYPE
+};
+
+struct ParticleMaterailInfo
+{
+    ParticleMaterailInfo() : blendMode("additive"),
+                             frameAnimated(0),
+                             frameLoop(0),
+                             frameCount(1),
+                             frameColums(1),
+                             frameRows(1),
+                             frameRandomOffset(0),
+                             frameDuration(0) {}
+
+	std::string blendMode;
+	std::string textureName;
+	int frameAnimated;
+	int frameLoop;
+	int frameCount;
+	int frameColums;
+	int frameRows;
+	int frameRandomOffset;
+	int frameDuration;
+};
+
+struct ParticleBoxInfo
+{
+    ParticleBoxInfo() : boxLengthX(50),
+                        boxLengthY(50),
+                        boxLengthZ(50) {}
+
+	float boxLengthX;
+	float boxLengthY;
+	float boxLengthZ;
+};
+
+struct ParticleSphereInfo
+{
+    ParticleSphereInfo() : sphereRadius(100) {}
+
+	float sphereRadius;
+};
+
+struct ParticleHemisphere
+{
+    ParticleHemisphere() : hemisphereRadius(100) {}
+
+	float hemisphereRadius;
+};
+
+struct ParticleCylinderInfo
+{
+    ParticleCylinderInfo() : cylinderRadius(100), cylinderHeight(100) {}
+
+	float cylinderRadius;
+	float cylinderHeight;
+};
+
+struct ParticleConeInfo
+{
+    ParticleConeInfo() : coneRadius(100), coneAngle(30) {}
+
+	float coneRadius;
+	float coneAngle;
+};
+
+struct ParticleCircleInfo
+{
+    ParticleCircleInfo() : circleOutRadius(130), circleInRadius(100) {}
+
+	float circleOutRadius;
+	float circleInRadius;
+};
+
+struct ParticleMeshInfo
+{
+    ParticleMeshInfo() : meshScale(1.0) {}
+
+	float meshScale;
+	std::string meshName;
+};
+
+struct ParticleEmissionInfo
+{
+    ParticleEmissionInfo() : emissionLoop(-1),
+                             emittOnceNum(0),
+                             emissionRate(200),
+                             emissionDuration(100),
+                             emissionIdleDuration(0),
+                             emitterPosition(core::vector3df(0, 0, 0)),
+                             emitterRotationAxisAngleMin(0),
+                             emitterRotationAxisAngleMax(0),
+                             emitterRotationAxis(core::vector3df(0, 0, 0)),
+                             emitterRotationAxisVar(core::vector3df(0, 0, 0)),
+                             emissionVelocityMode("axis"),
+                             emissionAccelecationMode("axis"),
+                             emitterShape("box"),
+                             emitterShapeStrectchScale(core::vector3df(1, 1, 1)) {}
+
+	int emissionLoop;
+	int emittOnceNum;
+	int emissionRate;
+	int emissionDuration;
+	int emissionIdleDuration;
+	core::vector3df emitterPosition;
+	float emitterRotationAxisAngleMin;
+	float emitterRotationAxisAngleMax;
+	core::vector3df emitterRotationAxis;
+	core::vector3df emitterRotationAxisVar;
+	std::string emissionVelocityMode;
+	std::string emissionAccelecationMode;
+	std::string emitterShape;
+	core::vector3df emitterShapeStrectchScale;
+	ParticleBoxInfo boxInfo;
+	ParticleSphereInfo sphereInfo;
+	ParticleHemisphere hemisphereInfo;
+	ParticleCylinderInfo cylinderInfo;
+	ParticleConeInfo coneInfo;
+	ParticleCircleInfo circleInfo;
+	ParticleMeshInfo meshInfo;
+};
+
+struct ParticleInfo
+{
+    ParticleInfo() : lifeTimeMin(1000),
+                     lifeTimeMax(1000),
+                     sizeStartMin(1.0),
+                     sizeStartMax(40.0),
+                     sizeEndMin(1),
+                     sizeEndMax(1),
+                     colorStart(video::SColor(255, 255, 255, 255)),
+                     colorStartVar(video::SColor(0, 0, 0, 0)),
+                     colorMid(video::SColor(255, 255, 255, 255)),
+                     colorMidVar(video::SColor(0, 0, 0, 0)),
+                     colorEnd(video::SColor(255, 255, 255, 255)),
+                     colorEndVar(video::SColor(0, 0, 0, 0)),
+                     velocity(core::vector3df(300, 0, 0)),
+                     velocityVar(core::vector3df(0, 0, 0)),
+                     acceleration(core::vector3df(0, 0, 0)),
+                     accelerationVar(core::vector3df(0, 0, 0)),
+                     spinAngleMin(0),
+                     spinAngleMax(0),
+                     rotationAxisAngleMin(0),
+                     rotationAxisAngleMax(0),
+                     rotationAxis(core::vector3df(0, 0, 0)),
+                     rotationAxisVar(core::vector3df(0, 0, 0)) {}
+
+	int lifeTimeMin;
+	int lifeTimeMax;
+	float sizeStartMin;
+	float sizeStartMax;
+	float sizeEndMin;
+	float sizeEndMax;
+	video::SColor colorStart;
+	video::SColor colorStartVar;
+	video::SColor colorMid;
+	video::SColor colorMidVar;
+	video::SColor colorEnd;
+	video::SColor colorEndVar;
+	core::vector3df velocity;
+	core::vector3df velocityVar;
+	core::vector3df acceleration;
+	core::vector3df accelerationVar;
+	float spinAngleMin;
+	float spinAngleMax;
+	float rotationAxisAngleMin;
+	float rotationAxisAngleMax;
+	core::vector3df rotationAxis;
+	core::vector3df rotationAxisVar;
+};
+
+struct ParticleRenderInfo
+{
+    ParticleRenderInfo() : imuType(0),
+                           billboardType("billboard"),
+                           stretchScale(core::vector2df(1, 1)),
+                           stretchType("position"),
+                           spinAlignToSpeedDirection(0) {}
+
+	int imuType;
+	std::string billboardType;
+	core::vector2df stretchScale;
+    std::string stretchType;
+	int spinAlignToSpeedDirection;
+};
+
+struct ParticleSystemInfo
+{
+    ParticleSystemInfo() : shaderEffect(0),
+                           particleCountMax(200),
+                           emitt_status(1) {}
+
+	bool operator==(const ParticleSystemInfo& other) const
+	{
+		return name == other.name;
+	}
+
+    bool operator!=(const ParticleSystemInfo& other) const
+    {
+        return name != other.name;
+    }
+
+    bool operator<(const ParticleSystemInfo& other) const
+    {
+        return name < other.name;
+    }
+
+	std::string name;
+	int shaderEffect;
+	int particleCountMax;
+	int emitt_status;
+	ParticleMaterailInfo materailInfo;
+	ParticleEmissionInfo emissionInfo;
+	ParticleInfo particleInfo;
+	ParticleRenderInfo renderInfo;
+	core::array<ParticleSystemInfo> birthSubEmitts;
+	core::array<ParticleSystemInfo> deathSubEmitts;
+};
+
 class IParticleSystemSceneNode : public ISceneNode
 {
 public:
@@ -81,6 +312,58 @@ public:
 			, ParticleBehavior(0)
 	{
 	}
+
+	virtual void SetParticleSystemInfo(const ParticleSystemInfo& particleSystemInfo) = 0;
+
+	virtual const ParticleSystemInfo& GetParticleSystemInfo() const = 0;
+
+    // 设置粒子公告板的类型
+    virtual void setParticleBillboardType(ParticleBillboardType billboardType) = 0;
+
+    // 获取粒子公告板的类型
+    virtual const ParticleBillboardType getParticleBillboardType() const = 0;
+
+	// 设置最大粒子数
+	virtual void setMaxPrticleCount(int maxParticleCount) = 0;
+
+	// 获取最大粒子数
+	virtual int getMaxParticleCount() const = 0;
+
+    // 设置是否使用序列帧动画
+    virtual void setEnableFrameAnimated(bool enableFrameAnimated) = 0;
+
+    // 获取是否使用序列帧动画
+    virtual bool getEnableFrameAnimated() const = 0;
+
+    // 设置是否循环序列帧动画
+    virtual void setIsFrameLoop(bool isFrameLoop) = 0;
+
+    // 获取是否循环序列帧动画
+    virtual bool getIsFrameLoop() const = 0;
+
+	// 设置序列帧的列数
+	virtual void setFrameAnimationRow(int frameAnimationRow) = 0;
+
+	// 获取序列帧的列数
+	virtual int getFrameAniantionRow() const = 0;
+
+	// 设置序列帧的行数
+	virtual void setFrameAnimationCol(int frameAnimationCol) = 0;
+
+	// 获取序列帧的行数
+	virtual int getFrameAnimationCol() const = 0;
+
+    // 设置序列帧初始索引，必须在0到frameAnimationRow * frameAnimationCol - 1之间
+    virtual void setFrameStartIndex(int frameStartIndex) = 0;
+
+    // 获取序列帧初始索引
+    virtual int getFrameStartIndex() const = 0;
+
+    // 设置单帧停留时间
+    virtual void setOneFrameKeepTime(int oneFrameKeepTime) = 0;
+
+    // 获取单帧停留时间
+    virtual int getOneFrameKeepTime() const = 0;
 
 	//! Sets the size of all particles.
 	virtual void setParticleSize(
@@ -468,7 +751,26 @@ public:
 		u32 lifeTimeMin=2000, u32 lifeTimeMax=4000,
 		s32 maxAngleDegrees=0,
 		const core::dimension2df& minStartSize = core::dimension2df(5.0f,5.0f),
-		const core::dimension2df& maxStartSize = core::dimension2df(5.0f,5.0f) ) = 0;
+		const core::dimension2df& maxStartSize = core::dimension2df(5.0f,5.0f),
+        bool isHalfSphere = false,
+		bool outlineOnly = false) = 0;
+
+	virtual IParticleConeEmitter* createConeEmitter( const core::vector3df& ceneter = core::vector3df(0.0f, 0.0f, 0.0f),
+                                                     const core::vector3df& normal = core::vector3df(0.0f, 1.0f, 0.0f),
+                                                     float radius = 10.0f,
+                                                     float length = 10.0f,
+                                                     float angle = 45.0f,
+                                                     bool isOutlineOnly = false,
+                                                     const core::vector3df& direction = core::vector3df(0.0f,0.03f,0.0f),
+                                                     u32 minParticlesPerSecond = 20,
+                                                     u32 maxParticlesPerSecond = 40,
+                                                     const video::SColor& minStartColor = video::SColor(255,0,0,0),
+                                                     const video::SColor& maxStartColor = video::SColor(255,255,255,255),
+                                                     u32 lifeTimeMin=2000,
+                                                     u32 lifeTimeMax=4000,
+                                                     s32 maxAngleDegrees=0,
+                                                     const core::dimension2df& minStartSize = core::dimension2df(5.0f,5.0f),
+                                                     const core::dimension2df& maxStartSize = core::dimension2df(5.0f,5.0f)) = 0;
 
 	//! Creates a point attraction affector.
 	/** This affector modifies the positions of the particles and attracts
@@ -501,7 +803,7 @@ public:
 	just call addAffector(). Note that you'll have to drop() the
 	returned pointer, after you don't need it any more, see
 	IReferenceCounted::drop() for more information. */
-	virtual IParticleAffector* createScaleParticleAffector(const core::dimension2df& scaleTo = core::dimension2df(1.0f, 1.0f)) = 0;
+	virtual IParticleAffector* createScaleParticleAffector() = 0;
 
 	//! Creates a fade out particle affector.
 	/** This affector modifies the color of every particle and and reaches
@@ -516,9 +818,7 @@ public:
 	as new affector of this particle system, just call addAffector(). Note
 	that you'll have to drop() the returned pointer, after you don't need
 	it any more, see IReferenceCounted::drop() for more informations. */
-	virtual IParticleFadeOutAffector* createFadeOutParticleAffector(
-		const video::SColor& targetColor = video::SColor(0,0,0,0),
-		u32 timeNeededToFadeOut = 1000) = 0;
+	virtual IParticleFadeOutAffector* createFadeOutParticleAffector() = 0;
 
 	//! Creates a gravity affector.
 	/** This affector modifies the direction of the particle. It assumes
@@ -536,6 +836,32 @@ public:
 	virtual IParticleGravityAffector* createGravityAffector(
 		const core::vector3df& gravity = core::vector3df(0.0f,-0.03f,0.0f),
 		u32 timeForceLost = 1000) = 0;
+
+	virtual IParticleFluidResistanceAffector* createFluidResistanceAffector(float minAcceleration = -0.01f,
+																			float maxAcceleration = -0.005f,
+																			float minDisturbanceX = 0.0f,
+																			float maxDisturbanceX = 0.0f,
+																			float minDisturbanceY = 0.0f,
+																			float maxDisturbanceY = 0.0f,
+																			float minDisturbanceZ = 0.0f,
+																			float maxDisturbanceZ = 0.0f,
+																			u32 minDisturbanceTimeDis = 0,
+																			u32 maxDisturbanceTimeDis = 0) = 0;
+
+	virtual IParticleParticleRotateAffector* createParticleParticleRotateAffector(bool isRandomDirection = true) = 0;
+
+    virtual IParticleRadialScaleAffector* createParticleRadialScaleAffector(float limiteMaxScaleX = 20.0f,
+																			float limiteMaxScaleY = 20.0f,
+																			float minScaleX = 15.0f,
+																			float maxScaleX = 20.0f,
+																			float minScaleY = 0.05f,
+																			float maxScaleY = 0.1f,
+																			ParticleScaleType scaleType = PARTICLE_KEEP_SCALE,
+																			ParticleScaleSpeedType scaleSpeedType = PARTICLE_SCALE_DISTANCE_SPEED,
+																			const core::vector3df& distanceOrigin = core::vector3df(0.0f, 0.0f, 0.0f),
+																			float speedRate = 0.1f) = 0;
+
+	virtual IParticleRevolutionAffector* createRevolutionAffector() = 0;
 
 	//! Creates a rotation affector.
 	/** This affector modifies the positions of the particles and attracts

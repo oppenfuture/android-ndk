@@ -669,7 +669,7 @@ namespace video
 		\param indexList Pointer to array of indices.
 		\param triangleCount Amount of Triangles. Usually amount of indices / 3. */
 		void drawIndexedTriangleList(const S3DVertex* vertices,
-			u32 vertexCount, const u16* indexList, u32 triangleCount)
+			u32 vertexCount, const u32* indexList, u32 triangleCount)
 		{
 			drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_STANDARD, scene::EPT_TRIANGLES, EIT_16BIT);
 		}
@@ -684,7 +684,7 @@ namespace video
 		\param indexList Pointer to array of indices.
 		\param triangleCount Amount of Triangles. Usually amount of indices / 3. */
 		void drawIndexedTriangleList(const S3DVertex2TCoords* vertices,
-			u32 vertexCount, const u16* indexList, u32 triangleCount)
+			u32 vertexCount, const u32* indexList, u32 triangleCount)
 		{
 			drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_2TCOORDS, scene::EPT_TRIANGLES, EIT_16BIT);
 		}
@@ -699,7 +699,7 @@ namespace video
 		\param indexList Pointer to array of indices.
 		\param triangleCount Amount of Triangles. Usually amount of indices / 3. */
 		void drawIndexedTriangleList(const S3DVertexTangents* vertices,
-			u32 vertexCount, const u16* indexList, u32 triangleCount)
+			u32 vertexCount, const u32* indexList, u32 triangleCount)
 		{
 			drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_TANGENTS, scene::EPT_TRIANGLES, EIT_16BIT);
 		}
@@ -714,7 +714,7 @@ namespace video
 		\param indexList Pointer to array of indices.
 		\param triangleCount Amount of Triangles. Usually amount of indices - 2. */
 		void drawIndexedTriangleFan(const S3DVertex* vertices,
-			u32 vertexCount, const u16* indexList, u32 triangleCount)
+			u32 vertexCount, const u32* indexList, u32 triangleCount)
 		{
 			drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_STANDARD, scene::EPT_TRIANGLE_FAN, EIT_16BIT);
 		}
@@ -729,7 +729,7 @@ namespace video
 		\param indexList Pointer to array of indices.
 		\param triangleCount Amount of Triangles. Usually amount of indices - 2. */
 		void drawIndexedTriangleFan(const S3DVertex2TCoords* vertices,
-			u32 vertexCount, const u16* indexList, u32 triangleCount)
+			u32 vertexCount, const u32* indexList, u32 triangleCount)
 		{
 			drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_2TCOORDS, scene::EPT_TRIANGLE_FAN, EIT_16BIT);
 		}
@@ -744,7 +744,7 @@ namespace video
 		\param indexList Pointer to array of indices.
 		\param triangleCount Amount of Triangles. Usually amount of indices - 2. */
 		void drawIndexedTriangleFan(const S3DVertexTangents* vertices,
-			u32 vertexCount, const u16* indexList, u32 triangleCount)
+			u32 vertexCount, const u32* indexList, u32 triangleCount)
 		{
 			drawVertexPrimitiveList(vertices, vertexCount, indexList, triangleCount, EVT_TANGENTS, scene::EPT_TRIANGLE_FAN, EIT_16BIT);
 		}

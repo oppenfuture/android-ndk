@@ -259,7 +259,6 @@ namespace scene
         virtual void CalculateSizeBox() = 0;
         virtual void LoadSizeBoxText(float x, float y, float z, const char *textPathX, const char *textPathY, const char *textPathZ) = 0;
         virtual void SetSizeBoxVisible(bool isSizeBoxVisible) = 0;
-
 	};
 
 } // end namespace scene

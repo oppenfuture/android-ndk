@@ -73,11 +73,11 @@ namespace scene
 
 		//! Get access to Indices.
 		/** \return Pointer to indices array. */
-		virtual const u16* getIndices() const = 0;
+		virtual const u32* getIndices() const = 0;
 
 		//! Get access to Indices.
 		/** \return Pointer to indices array. */
-		virtual u16* getIndices() = 0;
+		virtual u32* getIndices() = 0;
 
 		//! Get amount of indices in this meshbuffer.
 		/** \return Number of indices in this buffer. */

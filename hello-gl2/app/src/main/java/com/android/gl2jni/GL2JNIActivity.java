@@ -37,9 +37,8 @@ public class GL2JNIActivity extends Activity {
     @Override protected void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         copyAssets();
-        GL2JNILib.setTexturePath(new File(getApplicationContext().getFilesDir(), "kueken7_rgba_astc4x4_srgb.ktx").getAbsolutePath());
         mView = new GL2JNIView(getApplication());
-	setContentView(mView);
+	    setContentView(mView);
     }
 
     @Override protected void onPause() {

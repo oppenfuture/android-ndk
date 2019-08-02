@@ -34,8 +34,8 @@
 #include "include/frostfire/ISceneNode.h"
 
 #define  LOG_TAG    "libgl2jni"
-#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
-#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 static void printGLString(const char *name, GLenum s) {
     const char *v = (const char *) glGetString(s);
@@ -49,34 +49,30 @@ static void checkGlError(const char* op) {
     }
 }
 
-std::string gTextureFilename;
 
 auto vs = R"(
 precision highp float;
 attribute vec3 inVertexPosition;
-varying vec2 texcoord;
+uniform mat4 _MVP;
 void main(void) {
-  texcoord = (inVertexPosition.xy + 1.0) / 2.0;
-  gl_Position = vec4(inVertexPosition, 1.0);
+  gl_Position = _MVP * vec4(inVertexPosition, 1.0);
 }
 )";
 
 auto fs = R"(
 precision highp float;
-uniform sampler2D texture1;
-uniform sampler2D texture2;
-varying vec2 texcoord;
 void main(void) {
-  vec4 color = vec4(0.8, 0.9, 0.9, 1.0);
-  if (texcoord.y < 0.4) {
-    color = texture2D(texture1, vec2(texcoord.x, texcoord.y * 2.5));
-  }
-
-  if (texcoord.y > 0.6) {
-    color = texture2D(texture2, vec2(texcoord.x, texcoord.y * 2.5 - 1.5));
-  }
-
+  vec4 color = vec4(1, 0, 0, 1.0) ;
   gl_FragColor = color;
+}
+)";
+
+
+auto fs_transparent = R"(
+precision highp float;
+void main(void) {
+  vec4 color = vec4(0.0, 1.0, 0.0, 0.5);
+  gl_FragColor = color ;
 }
 )";
 
@@ -88,8 +84,8 @@ auto config = R"({
         {
           "queue": 2000,
           "blendenalble": false,
-          "zwrite": true,
-          "ztest": "lessequal",
+          "zwrite": false,
+          "ztest": "always",
           "cull": "back",
           "colormask": {
             "r": true,
@@ -107,14 +103,46 @@ auto config = R"({
       "vshsrc": "{{vs}}",
       "fshsrc": "{{fs}}",
       "uniforms": [
+      ],
+      "attributes": [
         {
-          "name": "texture1",
-          "type": "sampler2D"
-        },
-        {
-          "name": "texture2",
-          "type": "sampler2D"
+          "name": "inVertexPosition",
+          "semantic": "inVertexPosition"
         }
+      ]
+    }
+  ]
+})";
+
+auto config_transparent = R"({
+  "materialrenderers": [
+    {
+      "name": "renderer_transparent",
+      "pass": [
+        {
+          "queue": 3000,
+          "blendenalble": true,
+          "blendsrc": "srcalpha",
+          "blenddst": "oneminussrcalpha",
+          "zwrite": false,
+          "ztest": "always",
+          "cull": "back",
+          "colormask": {
+            "r": true,
+            "g": true,
+            "b": true,
+            "a": true
+          },
+          "programid": 0
+        }
+      ]
+    }
+  ],
+  "programs": [
+    {
+      "vshsrc": "{{vs}}",
+      "fshsrc": "{{fs}}",
+      "uniforms": [
       ],
       "attributes": [
         {
@@ -134,8 +162,6 @@ std::string genConfig(std::string config, const std::string &vs, const std::stri
 
 irr::video::IVideoDriver *driver;
 irr::scene::ISceneManager *scene_mgr;
-gli::texture texture;
-gli::gl::format texture_format;
 irr::scene::ISceneNode *screen_quad_node;
 
 bool setupGraphics(int w, int h) {
@@ -155,44 +181,36 @@ bool setupGraphics(int w, int h) {
     driver = device->getVideoDriver();
     scene_mgr = device->getSceneManager();
 
+    //配置非透明物体
     auto renderer_config = genConfig(config, vs, fs);
     driver->CreateCustomMaterialRenderers(*renderer_config.c_str());
     auto renderer = driver->getMaterialRenderer("renderer");
-    float vertices[] = {-1.f, -1.f, 1.0f, 1.f,  -1.f, 1.0f,
-                        1.f,  1.f,  1.0f, -1.f, 1.f,  1.0f};
+    float vertices[] = {-1.f, -1.f, -4.0f, 1.f,  -1.f, -4.0f,
+                        1.f,  1.f,  -4.0f, -1.f, 1.f,  -4.0f};
     uint32_t indices[] = {0, 1, 2, 0, 2, 3};
-    screen_quad_node = scene_mgr->addCustomMeshSceneNode(
+    //配置透明物体
+    auto renderer_config_transparent = genConfig(config_transparent, vs, fs_transparent);
+    driver->CreateCustomMaterialRenderers(*renderer_config_transparent.c_str());
+    auto renderer_transparent = driver->getMaterialRenderer("renderer_transparent");
+    float vertices_transparent[] = {0.f, -1.f, -3.0f, 2.f,  -1.f, -3.0f,
+                        2.f,  1.f,  -3.0f, 0.f, 1.f,  -3.0f};
+
+    //添加mesh
+    scene_mgr->addCustomMeshSceneNode(
             &renderer->InitMaterial, vertices, 4, indices, 6);
-
-    texture = gli::load(gTextureFilename);
-    gli::gl gli_gl(gli::gl::PROFILE_ES20);
-    texture_format = gli_gl.translate(texture.format(), texture.swizzles());
-    auto data_size = texture.size(0);
-    auto pixels = new uint8_t[data_size];
-    memset(pixels, 0, data_size);
-    auto texture1 = driver->createTexture(GL_TEXTURE_2D, (irr::u32)texture.extent(0).x, (irr::u32)texture.extent(0).y, data_size, texture_format.Internal, pixels, 0);
-    auto texture2 = driver->createTexture(GL_TEXTURE_2D, (irr::u32)texture.extent(0).x, (irr::u32)texture.extent(0).y, data_size, texture_format.Internal, pixels, 0);
-    delete[] pixels;
-
-    auto &pass = screen_quad_node->getMaterial(0).getPass(0);
-    pass.setTexture("texture1", texture1);
-    pass.setTexture("texture2", texture2);
-
-    scene_mgr->addCameraSceneNode();
+    scene_mgr->addCustomMeshSceneNode(
+            &renderer_transparent->InitMaterial, vertices_transparent, 4, indices, 6);
+    
+    //放置相机
+    irr::scene::ICameraSceneNode *camera_noe = scene_mgr->addCameraSceneNode();
+    irr::core::vector3df target(0, 0, -1);
+    irr::core::vector3df origin(0, 0, 2);
+    camera_noe->setTarget(target);
+    camera_noe->setPosition(origin);
     return true;
 }
 
 void renderFrame() {
-    static float grey;
-    grey += 0.01f;
-    if (grey > 1.0f) {
-        grey = 0.0f;
-    }
-
-    screen_quad_node->getMaterial(0).getPass(0).updateSubTexture("texture1",
-                                                                 0, 0, (irr::u32)texture.extent(0).x, (irr::u32)texture.extent(0).y,
-                                                                 texture.size(0), texture_format.Internal, texture.data());
-
     auto clear_flag = irr::video::ECBF_COLOR | irr::video:: ECBF_DEPTH;
     driver->beginScene(clear_flag);
     scene_mgr->drawAll();
@@ -202,7 +220,6 @@ void renderFrame() {
 extern "C" {
 JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_init(JNIEnv * env, jobject obj,  jint width, jint height);
 JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_step(JNIEnv * env, jobject obj);
-JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_setTexturePath(JNIEnv * env, jobject obj, jstring str);
 };
 
 JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_init(JNIEnv * env, jobject obj,  jint width, jint height)
@@ -215,9 +232,10 @@ JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_step(JNIEnv * env, jobj
     renderFrame();
 }
 
-JNIEXPORT void JNICALL Java_com_android_gl2jni_GL2JNILib_setTexturePath(JNIEnv * env, jobject obj, jstring str) {
-    const jsize len = env->GetStringUTFLength(str);
-    const char *strChars = env->GetStringUTFChars(str, (jboolean *)0);
-    gTextureFilename = std::string(strChars, len);
-    env->ReleaseStringUTFChars(str, strChars);
-}
+
+
+
+
+
+
+

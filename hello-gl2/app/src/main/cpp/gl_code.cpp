@@ -80,9 +80,9 @@ auto config = R"({
   "materialrenderers": [
     {
       "name": "renderer",
+      "queue": 2000,
       "pass": [
         {
-          "queue": 2000,
           "blendenalble": false,
           "zwrite": false,
           "ztest": "always",
@@ -118,9 +118,9 @@ auto config_transparent = R"({
   "materialrenderers": [
     {
       "name": "renderer_transparent",
+      "queue": 3000,
       "pass": [
         {
-          "queue": 3000,
           "blendenalble": true,
           "blendsrc": "srcalpha",
           "blenddst": "oneminussrcalpha",
@@ -198,8 +198,9 @@ bool setupGraphics(int w, int h) {
     //添加mesh
     scene_mgr->addCustomMeshSceneNode(
             &renderer->InitMaterial, vertices, 4, indices, 6);
-    scene_mgr->addCustomMeshSceneNode(
-            &renderer_transparent->InitMaterial, vertices_transparent, 4, indices, 6);
+    auto node = scene_mgr->addCustomMeshSceneNode(
+            &renderer->InitMaterial, vertices_transparent, 4, indices, 6);
+    node->getMaterial(0) = renderer_transparent->InitMaterial;
     
     //放置相机
     irr::scene::ICameraSceneNode *camera_noe = scene_mgr->addCameraSceneNode();
